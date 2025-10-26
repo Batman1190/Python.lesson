@@ -406,10 +406,29 @@ const exercises = [
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    checkMobileStatus();
     initializeApp();
     initializeMobileCompatibility();
     loadExercises();
     updateProgress();
+    
+    // Add click animations to cards
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.topic-card, .exercise-card, .feature-card')) {
+            e.target.closest('.topic-card, .exercise-card, .feature-card').style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                e.target.closest('.topic-card, .exercise-card, .feature-card').style.transform = '';
+            }, 150);
+        }
+    });
+    
+    // Add floating animation to mascot
+    const mascot = document.querySelector('.python-mascot');
+    if (mascot) {
+        setInterval(() => {
+            mascot.style.transform = `translateY(${Math.sin(Date.now() / 1000) * 10}px)`;
+        }, 50);
+    }
 });
 
 function initializeMobileCompatibility() {
@@ -624,28 +643,44 @@ function runCode(exerciseId) {
 
 function checkSolution(exerciseId) {
     const exercise = exercises.find(ex => ex.id === exerciseId);
-    const codeInput = document.getElementById('exercise-code');
     
-    // Mobile-friendly code input handling
+    // Enhanced mobile-friendly code input handling
     let userCode = '';
+    
+    // Try multiple methods to get code input (for better mobile compatibility)
+    const codeInput = document.getElementById('exercise-code') || 
+                      document.querySelector('textarea#exercise-code') ||
+                      document.querySelector('.code-input');
+    
     if (codeInput) {
         userCode = codeInput.value.trim();
-    } else {
-        // Fallback for mobile browsers
+    }
+    
+    // Additional fallback for mobile browsers
+    if (!userCode) {
         const textarea = document.querySelector('#exercise-code');
-        if (textarea) {
+        if (textarea && textarea.value) {
             userCode = textarea.value.trim();
         }
     }
     
     const feedbackDiv = document.getElementById(`feedback-${exerciseId}`);
     
+    // Check if mobile device for enhanced logging
+    const isMobile = isMobileDevice();
+    
     // Debug logging for mobile troubleshooting
     console.log('Checking solution for exercise:', exerciseId);
     console.log('User code:', userCode);
     console.log('Expected solution:', exercise.solution);
+    console.log('Is mobile:', isMobile);
     
-    // Simple solution checking
+    if (!userCode) {
+        feedbackDiv.innerHTML = '<div class="feedback incorrect">⚠️ Please write some code first!</div>';
+        return;
+    }
+    
+    // Flexible solution checking (works for both mobile and desktop)
     const isCorrect = checkCodeCorrectness(userCode, exercise.solution);
     
     console.log('Is correct:', isCorrect);
@@ -660,9 +695,23 @@ function checkSolution(exerciseId) {
             localStorage.setItem('earnedStars', earnedStars.toString());
             updateProgress();
             loadExercises();
+            
+            // Scroll feedback into view on mobile
+            if (isMobile) {
+                setTimeout(() => {
+                    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
         }
     } else {
-        feedbackDiv.innerHTML = '<div class="feedback incorrect">❌ Not quite right. Try again!</div>';
+        feedbackDiv.innerHTML = '<div class="feedback incorrect">❌ Not quite right. Try again! 💡 Click "Get Hint" for help!</div>';
+        
+        // Scroll feedback into view on mobile
+        if (isMobile) {
+            setTimeout(() => {
+                feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
     }
 }
 
@@ -676,6 +725,20 @@ function showHint(exerciseId) {
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
            window.innerWidth <= 768;
+}
+
+// Enhanced mobile check - logs mobile status for debugging
+function checkMobileStatus() {
+    const isMobile = isMobileDevice();
+    if (isMobile) {
+        console.log('🌐 Mobile device detected:', {
+            width: window.innerWidth,
+            userAgent: navigator.userAgent,
+            hasTouch: 'ontouchstart' in window,
+            orientation: screen.orientation ? screen.orientation.angle : 'unknown'
+        });
+    }
+    return isMobile;
 }
 
 function getMobileFriendlyElement(selector) {
@@ -698,49 +761,94 @@ function getMobileFriendlyValue(elementId) {
     return '';
 }
 
+// Helper function for flexible pattern checking
+function flexiblePatternCheck(userCode, solution) {
+    const normalizedUser = userCode.toLowerCase().replace(/\s+/g, ' ').trim();
+    const normalizedSolution = solution.toLowerCase().replace(/\s+/g, ' ').trim();
+    
+    // Extract key concepts from both codes
+    const userHasVar = /\w+\s*=\s*/.test(userCode);
+    const userHasString = /"[^"]*"|'[^']*'/.test(userCode);
+    const userHasNumber = /\d+/.test(userCode);
+    const userHasList = /\[.*\]/.test(userCode);
+    const userHasLoop = /for|while/.test(userCode);
+    const userHasIf = userCode.includes('if');
+    const userHasDef = userCode.includes('def');
+    const userHasImport = userCode.includes('import');
+    const userHasPrint = userCode.includes('print');
+    
+    const solutionHasVar = /\w+\s*=\s*/.test(solution);
+    const solutionHasString = /"[^"]*"|'[^']*'/.test(solution);
+    const solutionHasNumber = /\d+/.test(solution);
+    const solutionHasList = /\[.*\]/.test(solution);
+    const solutionHasLoop = /for|while/.test(solution);
+    const solutionHasIf = solution.includes('if');
+    const solutionHasDef = solution.includes('def');
+    const solutionHasImport = solution.includes('import');
+    const solutionHasPrint = solution.includes('print');
+    
+    // Check if key concepts match
+    let matches = 0;
+    let total = 0;
+    
+    if (solutionHasVar) { total++; if (userHasVar) matches++; }
+    if (solutionHasString) { total++; if (userHasString) matches++; }
+    if (solutionHasNumber) { total++; if (userHasNumber) matches++; }
+    if (solutionHasList) { total++; if (userHasList) matches++; }
+    if (solutionHasLoop) { total++; if (userHasLoop) matches++; }
+    if (solutionHasIf) { total++; if (userHasIf) matches++; }
+    if (solutionHasDef) { total++; if (userHasDef) matches++; }
+    if (solutionHasImport) { total++; if (userHasImport) matches++; }
+    if (solutionHasPrint) { total++; if (userHasPrint) matches++; }
+    
+    // At least 70% of key concepts should match
+    return matches >= total * 0.7;
+}
+
 // Enhanced exercise checking with mobile compatibility
 function checkCodeCorrectness(userCode, solution) {
-    // Mobile-friendly code normalization
-    const normalizedUser = userCode.toLowerCase().replace(/\s+/g, ' ').trim();
+    // Mobile-friendly code normalization - handle mobile keyboard characters
+    // Remove extra whitespace, normalize line breaks, handle mobile-specific characters
+    let cleanedCode = userCode.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    cleanedCode = cleanedCode.replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF]/g, ' ');
+    cleanedCode = cleanedCode.replace(/\s+/g, ' ').trim();
+    
+    const normalizedUser = cleanedCode.toLowerCase();
     const normalizedSolution = solution.toLowerCase().replace(/\s+/g, ' ').trim();
     
     // Get exercise ID with mobile fallbacks
     const exerciseId = getCurrentExerciseId();
     
-    console.log('Mobile Debug - Exercise ID:', exerciseId);
-    console.log('Mobile Debug - User Code:', normalizedUser);
-    console.log('Mobile Debug - Solution:', normalizedSolution);
+    console.log('Exercise Check - ID:', exerciseId);
+    console.log('Exercise Check - Original Code:', userCode);
+    console.log('Exercise Check - Cleaned Code:', cleanedCode);
     
     if (!exerciseId) {
-        console.log('Mobile Debug - No exercise ID found, using fallback');
-        // Fallback to basic checking
-        return normalizedUser.includes(normalizedSolution.split('=')[0]) || 
-               normalizedUser.includes('=') && normalizedUser.includes('"');
+        console.log('Exercise Check - No exercise ID found, using fallback');
+        // Fallback to flexible pattern matching
+        return flexiblePatternCheck(cleanedCode, solution);
     }
     
-    // Variables exercises (1-5) - Enhanced mobile checking
+    // Use cleaned code for all pattern matching
+    userCode = cleanedCode;
+    
+    // Variables exercises (1-5) - Flexible pattern matching
     if (exerciseId === 1) {
-        // My First Variable - accept any name variable
-        const hasMyName = normalizedUser.includes('my_name=');
-        const hasQuotes = /my_name="[^"]*"/.test(normalizedUser);
-        console.log('Mobile Debug - Exercise 1:', { hasMyName, hasQuotes });
-        return hasMyName && hasQuotes;
+        // My First Variable - accept any variable assignment with a string value
+        const hasAssignment = /\w+\s*=\s*"[^"]*"/.test(userCode) || /\w+\s*=\s*'[^']*'/.test(userCode);
+        return hasAssignment;
     }
     
     if (exerciseId === 2) {
-        // Age Variable - accept any number
-        const hasMyAge = normalizedUser.includes('my_age=');
-        const hasNumber = /my_age=\d+/.test(normalizedUser);
-        console.log('Mobile Debug - Exercise 2:', { hasMyAge, hasNumber });
-        return hasMyAge && hasNumber;
+        // Age Variable - accept any variable assignment with a number
+        const hasAssignment = /\w+\s*=\s*\d+/.test(userCode);
+        return hasAssignment;
     }
     
     if (exerciseId === 3) {
-        // Favorite Color - accept any color variable
-        const hasFavoriteColor = normalizedUser.includes('favorite_color=');
-        const hasQuotes = /favorite_color="[^"]*"/.test(normalizedUser);
-        console.log('Mobile Debug - Exercise 3:', { hasFavoriteColor, hasQuotes });
-        return hasFavoriteColor && hasQuotes;
+        // Favorite Color - accept any variable assignment with a string
+        const hasAssignment = /\w+\s*=\s*"[^"]*"/.test(userCode) || /\w+\s*=\s*'[^']*'/.test(userCode);
+        return hasAssignment;
     }
     
     if (exerciseId === 4) {
@@ -759,52 +867,139 @@ function checkCodeCorrectness(userCode, solution) {
     if (exerciseId === 5) {
         // Multiple Variables - accept any three variables
         const lines = userCode.split('\n').map(line => line.trim()).filter(line => line);
-        if (lines.length >= 3) {
-            let validVariables = 0;
-            lines.forEach(line => {
-                if (line.match(/^\w+\s*=\s*.+$/)) validVariables++;
-            });
-            console.log('Mobile Debug - Exercise 5:', { lines: lines.length, validVariables });
-            return validVariables >= 3;
-        }
-        return false;
+        let validVariables = 0;
+        lines.forEach(line => {
+            if (/\w+\s*=\s*.+/.test(line)) validVariables++;
+        });
+        return validVariables >= 3;
     }
     
-    // Numbers exercises (6-10) - Enhanced mobile checking
+    // Numbers exercises (6-10) - Flexible checking
     if (exerciseId === 6) {
-        const hasAddition = /\d+\s*\+\s*\d+/.test(normalizedUser);
-        console.log('Mobile Debug - Exercise 6:', { hasAddition });
+        const hasAddition = /\d+\s*\+\s*\d+/.test(userCode);
         return hasAddition;
     }
     
     if (exerciseId === 7) {
-        const hasSubtraction = /\d+\s*-\s*\d+/.test(normalizedUser);
-        console.log('Mobile Debug - Exercise 7:', { hasSubtraction });
+        const hasSubtraction = /\d+\s*-\s*\d+/.test(userCode);
         return hasSubtraction;
     }
     
     if (exerciseId === 8) {
-        const hasMultiplication = /\d+\s*\*\s*\d+/.test(normalizedUser);
-        console.log('Mobile Debug - Exercise 8:', { hasMultiplication });
+        const hasMultiplication = /\d+\s*\*\s*\d+/.test(userCode);
         return hasMultiplication;
     }
     
     if (exerciseId === 9) {
-        const hasDivision = /\d+\s*\/\s*\d+/.test(normalizedUser);
-        console.log('Mobile Debug - Exercise 9:', { hasDivision });
+        const hasDivision = /\d+\s*\/\s*\d+/.test(userCode);
         return hasDivision;
     }
     
     if (exerciseId === 10) {
-        const hasVariables = normalizedUser.includes('a=') && normalizedUser.includes('b=');
-        const hasResult = normalizedUser.includes('result=');
-        const hasAddition = normalizedUser.includes('+');
-        console.log('Mobile Debug - Exercise 10:', { hasVariables, hasResult, hasAddition });
-        return hasVariables && hasResult && hasAddition;
+        // Math with Variables - accept variables and math operations
+        const hasVariables = /\w+\s*=\s*\d+/.test(userCode);
+        const hasMath = /[\+\-\*\/]/g.test(userCode);
+        const hasResult = /\w+\s*=/.test(userCode);
+        return hasVariables && hasMath && hasResult;
     }
     
-    // Continue with all other exercises...
-    // [Rest of the exercise checking logic remains the same]
+    // Strings exercises (11-15)
+    if (exerciseId === 11) {
+        // My First String - accept any string literal
+        return /"[^"]*"/.test(userCode) || /'[^']*'/.test(userCode);
+    }
+    
+    if (exerciseId === 12) {
+        // String Addition - accept string concatenation with +
+        const hasString1 = /"[^"]*"/.test(userCode) || /'[^']*'/.test(userCode);
+        const hasPlus = userCode.includes('+');
+        return hasString1 && hasPlus;
+    }
+    
+    if (exerciseId === 13) {
+        // String Length - accept len() function with any string
+        return userCode.includes('len') && /\([^)]*\)/.test(userCode);
+    }
+    
+    if (exerciseId === 14) {
+        // Uppercase Fun - accept .upper() on any string
+        const hasString = /"[^"]*"\.upper|'[^']*'\.upper/.test(userCode);
+        return hasString || (userCode.includes('upper') && /\(\)/.test(userCode));
+    }
+    
+    if (exerciseId === 15) {
+        // String Variables - accept variable assignment and print
+        const hasVar = /\w+\s*=\s*"[^"]*"/.test(userCode) || /\w+\s*=\s*'[^']*'/.test(userCode);
+        const hasPrint = userCode.includes('print');
+        return hasVar && hasPrint;
+    }
+    
+    // Lists exercises (16-20)
+    if (exerciseId >= 16 && exerciseId <= 20) {
+        const hasList = /\[.*\]/.test(userCode);
+        if (exerciseId === 16) return hasList; // Any list
+        if (exerciseId === 17) return hasList && /\[\d+\]/.test(userCode); // Any index access
+        if (exerciseId === 18) return hasList && userCode.includes('append'); // append method
+        if (exerciseId === 19) return hasList && userCode.includes('len('); // len() function
+        if (exerciseId === 20) return hasList && /\d+:\d+/.test(userCode); // Any slice notation
+    }
+    
+    // Loops exercises (21-25)
+    if (exerciseId >= 21 && exerciseId <= 25) {
+        if (exerciseId === 21) return userCode.includes('for') && userCode.includes('range'); // for with range
+        if (exerciseId === 22) return userCode.includes('for') && userCode.includes('in'); // for...in
+        if (exerciseId === 23) return userCode.includes('while') && /[\<\>\=\!\<\=]/.test(userCode); // while with condition
+        if (exerciseId === 24) return userCode.includes('for') && userCode.includes('range') && /\d+,\s*\d+/.test(userCode); // range with params
+        if (exerciseId === 25) return userCode.includes('for') && (userCode.match(/for/g) || []).length >= 2; // Nested for loops
+    }
+    
+    // Conditions exercises (26-30)
+    if (exerciseId >= 26 && exerciseId <= 30) {
+        const hasIf = userCode.includes('if');
+        if (exerciseId === 26) return hasIf && /\w+\s*>\s*\d+/.test(userCode); // if with > comparison
+        if (exerciseId === 27) return hasIf && userCode.includes('else'); // if...else
+        if (exerciseId === 28) return hasIf && userCode.includes('elif'); // if...elif
+        if (exerciseId === 29) return hasIf && userCode.includes('and'); // if with and
+        if (exerciseId === 30) return hasIf && /\w+\s*>=\s*\d+/.test(userCode); // if with >=
+    }
+    
+    // Functions exercises (31-35)
+    if (exerciseId >= 31 && exerciseId <= 35) {
+        const hasDef = userCode.includes('def');
+        if (exerciseId === 31) return hasDef && /def\s+\w+\s*\(/.test(userCode); // Any function definition
+        if (exerciseId === 32) return hasDef && /def\s+\w+\s*\([^)]*\)/.test(userCode); // Function with parameter
+        if (exerciseId === 33) return hasDef && userCode.includes('return') && /[\+\-\*\/]/.test(userCode); // Function with return and math
+        if (exerciseId === 34) return hasDef && userCode.includes('return') && /=/.test(userCode); // Function call assignment
+        if (exerciseId === 35) return hasDef && /def\s+\w+\s*\([^)]*=\s*/.test(userCode); // Function with default param
+    }
+    
+    // Turtle exercises (36-40)
+    if (exerciseId >= 36 && exerciseId <= 40) {
+        const hasImport = userCode.includes('import turtle');
+        if (exerciseId === 36) return hasImport && userCode.includes('forward') && userCode.includes('right'); // Square
+        if (exerciseId === 37) return hasImport && userCode.includes('circle'); // Circle
+        if (exerciseId === 38) return hasImport && userCode.includes('color'); // Any color
+        if (exerciseId === 39) return hasImport && userCode.includes('forward') && userCode.includes('left'); // Triangle
+        if (exerciseId === 40) return hasImport && userCode.includes('forward') && /right\(144\)|right\s*\(\s*144\s*\)/.test(userCode); // Star with 144deg
+    }
+    
+    // Games exercises (41-45)
+    if (exerciseId >= 41 && exerciseId <= 45) {
+        if (exerciseId === 41) return userCode.includes('input') && userCode.includes('if'); // Input and if
+        if (exerciseId === 42) return userCode.includes('import random') && userCode.includes('choice'); // Random choice
+        if (exerciseId === 43) return userCode.includes('import random') && userCode.includes('randint'); // Random int
+        if (exerciseId === 44) return userCode.includes('input') && userCode.includes('in '); // Input with 'in' check
+        if (exerciseId === 45) return userCode.includes('input') && /[\+\-\*\/]/.test(userCode) && userCode.includes('if'); // Math quiz
+    }
+    
+    // Projects exercises (46-50)
+    if (exerciseId >= 46 && exerciseId <= 50) {
+        if (exerciseId === 46) return userCode.includes('import random') && userCode.includes('choice'); // Story gen
+        if (exerciseId === 47) return userCode.includes('print') && /f["']|format\(/.test(userCode); // f-string or format
+        if (exerciseId === 48) return userCode.includes('import random') && userCode.includes('import string'); // Password gen
+        if (exerciseId === 49) return /\[\]/.test(userCode) && userCode.includes('enumerate'); // To-do list
+        if (exerciseId === 50) return userCode.includes('import random') && userCode.includes('randint') && userCode.includes('if'); // Weather app
+    }
     
     // Default checking for any remaining exercises
     const solutionWords = normalizedSolution.split(/[=+\-*/()\[\]{}]/);
@@ -965,23 +1160,4 @@ window.onclick = function(event) {
     }
 }
 
-// Add some fun animations and interactions
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click animations to cards
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.topic-card, .exercise-card, .feature-card')) {
-            e.target.closest('.topic-card, .exercise-card, .feature-card').style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                e.target.closest('.topic-card, .exercise-card, .feature-card').style.transform = '';
-            }, 150);
-        }
-    });
-    
-    // Add floating animation to mascot
-    const mascot = document.querySelector('.python-mascot');
-    if (mascot) {
-        setInterval(() => {
-            mascot.style.transform = `translateY(${Math.sin(Date.now() / 1000) * 10}px)`;
-        }, 50);
-    }
-});
+// Note: Animations are now initialized in the main DOMContentLoaded listener above
