@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐍 Python Adventure - Learn Python for Kids!</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Comic+Neue:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">🐍 Python Adventure</h1>
+            <nav class="nav">
+                <button class="nav-btn" onclick="showSection('home')">🏠 Home</button>
+                <button class="nav-btn" onclick="showSection('topics')">📚 Topics</button>
+                <button class="nav-btn" onclick="showSection('exercises')">🎮 Exercises</button>
+                <button class="nav-btn" onclick="showSection('progress')">🏆 Progress</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <div class="container">
+                <div class="hero">
+                    <h2>Welcome to Python Adventure! 🌟</h2>
+                    <p>Hi there, little programmer! Ready to learn Python? It's like giving instructions to a computer friend!</p>
+                    <div class="hero-image">
+                        <div class="python-mascot">🐍</div>
+                        <div class="stars">⭐✨🌟⭐✨</div>
+                    </div>
+                    <button class="cta-button" onclick="showSection('topics')">Start Learning!</button>
+                </div>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Easy Topics</h3>
+                        <p>Learn Python step by step with fun explanations!</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎮</div>
+                        <h3>50 Exercises</h3>
+                        <p>Practice with interactive coding challenges!</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏆</div>
+                        <h3>Earn Stars</h3>
+                        <p>Get rewards for completing exercises!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topics Section -->
+        <section id="topics" class="section">
+            <div class="container">
+                <h2>📚 Python Topics</h2>
+                <div class="topics-grid">
+                    <div class="topic-card" onclick="showTopic('variables')">
+                        <div class="topic-icon">📦</div>
+                        <h3>Variables</h3>
+                        <p>Store information like magic boxes!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-variables"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('numbers')">
+                        <div class="topic-icon">🔢</div>
+                        <h3>Numbers & Math</h3>
+                        <p>Do math with Python!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-numbers"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('strings')">
+                        <div class="topic-icon">📝</div>
+                        <h3>Strings</h3>
+                        <p>Work with words and text!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-strings"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('lists')">
+                        <div class="topic-icon">📋</div>
+                        <h3>Lists</h3>
+                        <p>Keep things organized in lists!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-lists"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('loops')">
+                        <div class="topic-icon">🔄</div>
+                        <h3>Loops</h3>
+                        <p>Repeat things over and over!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-loops"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('conditions')">
+                        <div class="topic-icon">❓</div>
+                        <h3>If Statements</h3>
+                        <p>Make decisions with Python!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-conditions"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('functions')">
+                        <div class="topic-icon">⚙️</div>
+                        <h3>Functions</h3>
+                        <p>Create your own Python tools!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-functions"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('turtle')">
+                        <div class="topic-icon">🐢</div>
+                        <h3>Turtle Graphics</h3>
+                        <p>Draw pictures with code!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-turtle"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('games')">
+                        <div class="topic-icon">🎮</div>
+                        <h3>Simple Games</h3>
+                        <p>Make your own games!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-games"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="topic-card" onclick="showTopic('projects')">
+                        <div class="topic-icon">🚀</div>
+                        <h3>Fun Projects</h3>
+                        <p>Build cool things!</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-projects"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic Detail Section -->
+        <section id="topic-detail" class="section">
+            <div class="container">
+                <button class="back-btn" onclick="showSection('topics')">← Back to Topics</button>
+                <div id="topic-content"></div>
+            </div>
+        </section>
+
+        <!-- Exercises Section -->
+        <section id="exercises" class="section">
+            <div class="container">
+                <h2>🎮 Interactive Exercises</h2>
+                <div class="exercise-filters">
+                    <button class="filter-btn active" onclick="filterExercises('all')">All</button>
+                    <button class="filter-btn" onclick="filterExercises('variables')">Variables</button>
+                    <button class="filter-btn" onclick="filterExercises('numbers')">Numbers</button>
+                    <button class="filter-btn" onclick="filterExercises('strings')">Strings</button>
+                    <button class="filter-btn" onclick="filterExercises('lists')">Lists</button>
+                    <button class="filter-btn" onclick="filterExercises('loops')">Loops</button>
+                    <button class="filter-btn" onclick="filterExercises('conditions')">If Statements</button>
+                    <button class="filter-btn" onclick="filterExercises('functions')">Functions</button>
+                    <button class="filter-btn" onclick="filterExercises('turtle')">Turtle</button>
+                    <button class="filter-btn" onclick="filterExercises('games')">Games</button>
+                </div>
+                <div id="exercises-container" class="exercises-grid"></div>
+            </div>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progress" class="section">
+            <div class="container">
+                <h2>🏆 Your Progress</h2>
+                <div class="progress-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-stars">0</div>
+                        <div class="stat-label">Stars Earned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="exercises-completed">0</div>
+                        <div class="stat-label">Exercises Done</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="topics-mastered">0</div>
+                        <div class="stat-label">Topics Mastered</div>
+                    </div>
+                </div>
+                
+                <div class="achievements">
+                    <h3>🏅 Achievements</h3>
+                    <div id="achievements-list" class="achievements-grid"></div>
+                </div>
+                
+                <div class="certificate-section">
+                    <h3>🎓 Certificate</h3>
+                    <div class="certificate" id="certificate">
+                        <p>Complete all exercises to earn your Python Adventure Certificate!</p>
+                        <div class="certificate-progress">
+                            <div class="certificate-bar" id="certificate-progress"></div>
+                        </div>
+                        <div class="certificate-text">0/50 exercises completed</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Exercise Modal -->
+    <div id="exercise-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeExerciseModal()">&times;</span>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>🐍 Made with love for young Python programmers! Keep coding and having fun!</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
