@@ -620,6 +620,14 @@ function runCode(exerciseId) {
     const outputDiv = document.getElementById(`output-content-${exerciseId}`);
 
     try {
+        // Normalize common mobile quirks (smart quotes, newlines, zero-width, NBSP)
+        code = code
+            .replace(/\r\n/g, '\n')
+            .replace(/\r/g, '\n')
+            .replace(/[\u200B-\u200D\uFEFF]/g, '')
+            .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ')
+            .replace(/[“”]/g, '"')
+            .replace(/[‘’]/g, "'");
         // Simple Python-like execution simulation
         let output = '';
 
@@ -641,13 +649,27 @@ function runCode(exerciseId) {
 
         // Basic code interpretation
         if (code.includes('print(')) {
-            const printMatches = code.match(/print\(([^)]+)\)/g);
-            if (printMatches) {
-                printMatches.forEach(match => {
-                    const content = match.replace('print(', '').replace(')', '');
-                    output += evalPythonExpression(content, env) + '\n';
-                });
+            const contents = [];
+            const src = code;
+            for (let i = 0; i < src.length; i++) {
+                if (src.startsWith('print(', i)) {
+                    let j = i + 'print('.length;
+                    let depth = 1; // we are after the first '('
+                    let buf = '';
+                    while (j < src.length && depth > 0) {
+                        const ch = src[j];
+                        if (ch === '(') { depth++; buf += ch; }
+                        else if (ch === ')') { depth--; if (depth > 0) buf += ch; }
+                        else { buf += ch; }
+                        j++;
+                    }
+                    contents.push(buf.trim());
+                    i = j - 1; // jump ahead
+                }
             }
+            contents.forEach(arg => {
+                output += evalPythonExpression(arg, env) + '\n';
+            });
         }
 
         outputDiv.innerHTML = `<pre>${output || 'No output'}</pre>`;
@@ -686,6 +708,10 @@ function checkSolution(exerciseId) {
 
     if (isCorrect) {
         feedbackDiv.innerHTML = '<div class="feedback correct">🎉 Great job! Your code is correct!</div>';
+        // For Exercise 13, auto-run code to display the expected output (6)
+        if (exerciseId === 13) {
+            try { runCode(exerciseId); } catch(e) { /* ignore */ }
+        }
         if (!completedExercises.includes(exerciseId)) {
             completedExercises.push(exerciseId);
             earnedStars += 3;
@@ -951,9 +977,11 @@ function checkCodeCorrectness(userCode, solution) {
     }
     
     if (exerciseId === 13) {
-        // Just need len
-        const result = userCode.includes('len');
-        console.log('✅ Exercise 13:', { input: userCode, result });
+        // Require: word = "Python" and print(len(word)) (case-insensitive; spacing/newlines normalized)
+        const hasWordAssign = /\bword\s*=\s*(["'])python\1/.test(userCode);
+        const hasPrintLen = /print\s*\(\s*len\s*\(\s*word\s*\)\s*\)/.test(userCode);
+        const result = hasWordAssign && hasPrintLen;
+        console.log('✅ Exercise 13 (strict):', { input: userCode, hasWordAssign, hasPrintLen, result });
         return result;
     }
     
