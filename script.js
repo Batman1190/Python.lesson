@@ -805,32 +805,70 @@ function flexiblePatternCheck(userCode, solution) {
     return matches >= total * 0.7;
 }
 
+// Test function to validate mobile input handling
+function testMobileInput(input, expectedPattern) {
+    console.log('Testing input:', input);
+    console.log('Pattern:', expectedPattern);
+    const result = expectedPattern.test(input);
+    console.log('Result:', result);
+    return result;
+}
+
 // Enhanced exercise checking with mobile compatibility
 function checkCodeCorrectness(userCode, solution) {
-    // Mobile-friendly code normalization - handle mobile keyboard characters
-    // Remove extra whitespace, normalize line breaks, handle mobile-specific characters
-    let cleanedCode = userCode.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    cleanedCode = cleanedCode.replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF]/g, ' ');
+    if (!userCode || typeof userCode !== 'string') {
+        console.error('Invalid user code provided:', userCode);
+        return false;
+    }
+    
+    // Store original for debugging
+    const originalCode = userCode;
+    
+    // STEP 1: Clean up mobile keyboard quirks and invisible characters
+    let cleanedCode = userCode
+        // Normalize all line break types
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        // Remove invisible/zero-width characters that mobile keyboards might add
+        .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '')
+        // Replace non-breaking spaces and other weird spaces with regular spaces
+        .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ');
+    
+    // STEP 2: Normalize whitespace patterns for single-line matching
+    // Collapse multiple spaces into one, handle tabs
+    cleanedCode = cleanedCode.replace(/[ \t]+/g, ' ');
+    
+    // Collapse newlines into spaces (for pattern matching)
+    cleanedCode = cleanedCode.replace(/\n+/g, ' ');
+    
+    // Remove any remaining excess whitespace
     cleanedCode = cleanedCode.replace(/\s+/g, ' ').trim();
     
+    // STEP 3: Make case-insensitive for comparison
     const normalizedUser = cleanedCode.toLowerCase();
-    const normalizedSolution = solution.toLowerCase().replace(/\s+/g, ' ').trim();
+    const normalizedSolution = (solution || '').toLowerCase().replace(/\s+/g, ' ').trim();
     
     // Get exercise ID with mobile fallbacks
     const exerciseId = getCurrentExerciseId();
     
-    console.log('Exercise Check - ID:', exerciseId);
-    console.log('Exercise Check - Original Code:', userCode);
-    console.log('Exercise Check - Cleaned Code:', cleanedCode);
+    console.log('='.repeat(50));
+    console.log('MOBILE DEBUG - Exercise Check');
+    console.log('Exercise ID:', exerciseId);
+    console.log('Original:', originalCode);
+    console.log('Normalized:', normalizedUser);
+    console.log('Expected:', normalizedSolution);
+    console.log('Code Length:', originalCode.length, '->', normalizedUser.length);
+    console.log('Has newlines:', originalCode.includes('\n'));
+    console.log('Mobile Device:', isMobileDevice());
+    console.log('='.repeat(50));
     
     if (!exerciseId) {
-        console.log('Exercise Check - No exercise ID found, using fallback');
-        // Fallback to flexible pattern matching
-        return flexiblePatternCheck(cleanedCode, solution);
+        console.log('No exercise ID, using fallback pattern matching');
+        return flexiblePatternCheck(normalizedUser, normalizedSolution);
     }
     
-    // Use cleaned code for all pattern matching
-    userCode = cleanedCode;
+    // Use normalized code for pattern matching
+    userCode = normalizedUser;
     
     // Variables exercises (1-5) - Flexible pattern matching
     if (exerciseId === 1) {
