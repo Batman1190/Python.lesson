@@ -870,183 +870,300 @@ function checkCodeCorrectness(userCode, solution) {
     // Use normalized code for pattern matching
     userCode = normalizedUser;
     
-    // Variables exercises (1-5) - Flexible pattern matching
+    // Variables exercises (1-5) - Super flexible concept-based checking
     if (exerciseId === 1) {
-        // My First Variable - accept any variable assignment with a string value
-        // Very flexible: just check for variable assignment with any quote
-        const hasEquals = userCode.includes('=');
-        const hasQuote = userCode.includes('"') || userCode.includes("'");
-        const hasAssignment = hasEquals && hasQuote;
-        console.log('Exercise 1 Test:', { userCode, hasEquals, hasQuote, hasAssignment });
-        return hasAssignment;
+        // My First Variable - just need an equals sign and quotation marks
+        const result = userCode.includes('=') && (userCode.includes('"') || userCode.includes("'"));
+        console.log('✅ Exercise 1:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 2) {
-        // Age Variable - accept any variable assignment with a number
-        // Very flexible: check for = followed by digits
-        const hasEquals = userCode.includes('=');
-        const hasNumber = /\d/.test(userCode);
-        const hasAssignment = hasEquals && hasNumber;
-        console.log('Exercise 2 Test:', { userCode, hasEquals, hasNumber, hasAssignment });
-        return hasAssignment;
+        // Age Variable - just need an equals sign and a digit
+        const result = userCode.includes('=') && userCode.match(/\d/);
+        console.log('✅ Exercise 2:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 3) {
-        // Favorite Color - accept any variable assignment with a string
-        // Same as exercise 1
-        const hasEquals = userCode.includes('=');
-        const hasQuote = userCode.includes('"') || userCode.includes("'");
-        const hasAssignment = hasEquals && hasQuote;
-        console.log('Exercise 3 Test:', { userCode, hasEquals, hasQuote, hasAssignment });
-        return hasAssignment;
+        // Favorite Color - just need an equals sign and quotation marks  
+        const result = userCode.includes('=') && (userCode.includes('"') || userCode.includes("'"));
+        console.log('✅ Exercise 3:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 4) {
-        // Change Variables - accept any variable reassignment
-        // Find all variable assignments: varName = ...
-        const matches = [...userCode.matchAll(/(\w+)\s*=\s*/g)];
-        console.log('Exercise 4 Debug:', { matches: matches.length, vars: matches.map(m => m[1]) });
-        // Check if at least one variable appears twice (reassignment)
-        if (matches.length >= 2) {
-            const vars = matches.map(m => m[1]);
-            // Check for duplicate variable names (same variable assigned twice)
-            return new Set(vars).size < vars.length;
-        }
-        return false;
+        // Change Variables - just need multiple assignments
+        const assignmentCount = (userCode.match(/=/g) || []).length;
+        const result = assignmentCount >= 2;
+        console.log('✅ Exercise 4:', { input: userCode, assignmentCount, result });
+        return result;
     }
     
     if (exerciseId === 5) {
-        // Multiple Variables - accept any three variables
-        const matches = userCode.match(/\w+\s*=/g);
-        console.log('Exercise 5 Debug:', { varCount: matches ? matches.length : 0 });
-        return matches && matches.length >= 3;
+        // Multiple Variables - just need three assignments
+        const assignmentCount = (userCode.match(/=/g) || []).length;
+        const result = assignmentCount >= 3;
+        console.log('✅ Exercise 5:', { input: userCode, assignmentCount, result });
+        return result;
     }
     
-    // Numbers exercises (6-10) - Flexible checking
+    // Numbers exercises (6-10) - Simple concept checking
     if (exerciseId === 6) {
-        const hasAddition = /\d+\s*\+\s*\d+/.test(userCode);
-        return hasAddition;
+        // Just need a + with numbers
+        const result = userCode.includes('+') && /\d/.test(userCode);
+        console.log('✅ Exercise 6:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 7) {
-        const hasSubtraction = /\d+\s*-\s*\d+/.test(userCode);
-        return hasSubtraction;
+        const result = userCode.includes('-') && /\d/.test(userCode);
+        console.log('✅ Exercise 7:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 8) {
-        const hasMultiplication = /\d+\s*\*\s*\d+/.test(userCode);
-        return hasMultiplication;
+        const result = userCode.includes('*') && /\d/.test(userCode);
+        console.log('✅ Exercise 8:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 9) {
-        const hasDivision = /\d+\s*\/\s*\d+/.test(userCode);
-        return hasDivision;
+        const result = userCode.includes('/') && /\d/.test(userCode);
+        console.log('✅ Exercise 9:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 10) {
-        // Math with Variables - accept variables and math operations
-        const hasVariables = /\w+\s*=\s*\d+/.test(userCode);
-        const hasMath = /[\+\-\*\/]/g.test(userCode);
-        const hasResult = /\w+\s*=/.test(userCode);
-        return hasVariables && hasMath && hasResult;
+        // Just need =, numbers, and + or -
+        const result = userCode.includes('=') && /\d/.test(userCode) && (userCode.includes('+') || userCode.includes('-'));
+        console.log('✅ Exercise 10:', { input: userCode, result });
+        return result;
     }
     
     // Strings exercises (11-15)
     if (exerciseId === 11) {
-        // My First String - accept any string literal
-        return /"[^"]*"/.test(userCode) || /'[^']*'/.test(userCode);
+        // Just need quotes
+        const result = userCode.includes('"') || userCode.includes("'");
+        console.log('✅ Exercise 11:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 12) {
-        // String Addition - accept string concatenation with +
-        const hasString1 = /"[^"]*"/.test(userCode) || /'[^']*'/.test(userCode);
-        const hasPlus = userCode.includes('+');
-        return hasString1 && hasPlus;
+        // Just need + with quotes
+        const result = (userCode.includes('"') || userCode.includes("'")) && userCode.includes('+');
+        console.log('✅ Exercise 12:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 13) {
-        // String Length - accept len() function with any string
-        return userCode.includes('len') && /\([^)]*\)/.test(userCode);
+        // Just need len
+        const result = userCode.includes('len');
+        console.log('✅ Exercise 13:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 14) {
-        // Uppercase Fun - accept .upper() on any string
-        const hasString = /"[^"]*"\.upper|'[^']*'\.upper/.test(userCode);
-        return hasString || (userCode.includes('upper') && /\(\)/.test(userCode));
+        // Just need upper
+        const result = userCode.includes('upper');
+        console.log('✅ Exercise 14:', { input: userCode, result });
+        return result;
     }
     
     if (exerciseId === 15) {
-        // String Variables - accept variable assignment and print
-        const hasVar = /\w+\s*=\s*"[^"]*"/.test(userCode) || /\w+\s*=\s*'[^']*'/.test(userCode);
-        const hasPrint = userCode.includes('print');
-        return hasVar && hasPrint;
+        // Just need =, quotes, and print
+        const result = userCode.includes('=') && (userCode.includes('"') || userCode.includes("'")) && userCode.includes('print');
+        console.log('✅ Exercise 15:', { input: userCode, result });
+        return result;
     }
     
     // Lists exercises (16-20)
-    if (exerciseId >= 16 && exerciseId <= 20) {
-        const hasList = /\[.*\]/.test(userCode);
-        if (exerciseId === 16) return hasList; // Any list
-        if (exerciseId === 17) return hasList && /\[\d+\]/.test(userCode); // Any index access
-        if (exerciseId === 18) return hasList && userCode.includes('append'); // append method
-        if (exerciseId === 19) return hasList && userCode.includes('len('); // len() function
-        if (exerciseId === 20) return hasList && /\d+:\d+/.test(userCode); // Any slice notation
+    if (exerciseId === 16) {
+        const result = userCode.includes('[');
+        console.log('✅ Exercise 16:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 17) {
+        const result = userCode.includes('[') && userCode.includes(']');
+        console.log('✅ Exercise 17:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 18) {
+        const result = userCode.includes('append');
+        console.log('✅ Exercise 18:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 19) {
+        const result = userCode.includes('len');
+        console.log('✅ Exercise 19:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 20) {
+        const result = userCode.includes('[') && userCode.includes(':');
+        console.log('✅ Exercise 20:', { input: userCode, result });
+        return result;
     }
     
     // Loops exercises (21-25)
-    if (exerciseId >= 21 && exerciseId <= 25) {
-        if (exerciseId === 21) return userCode.includes('for') && userCode.includes('range'); // for with range
-        if (exerciseId === 22) return userCode.includes('for') && userCode.includes('in'); // for...in
-        if (exerciseId === 23) return userCode.includes('while') && /[\<\>\=\!\<\=]/.test(userCode); // while with condition
-        if (exerciseId === 24) return userCode.includes('for') && userCode.includes('range') && /\d+,\s*\d+/.test(userCode); // range with params
-        if (exerciseId === 25) return userCode.includes('for') && (userCode.match(/for/g) || []).length >= 2; // Nested for loops
+    if (exerciseId === 21) {
+        const result = userCode.includes('for') && userCode.includes('range');
+        console.log('✅ Exercise 21:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 22) {
+        const result = userCode.includes('for') && userCode.includes('in');
+        console.log('✅ Exercise 22:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 23) {
+        const result = userCode.includes('while');
+        console.log('✅ Exercise 23:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 24) {
+        const result = userCode.includes('range') && /,/.test(userCode);
+        console.log('✅ Exercise 24:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 25) {
+        const result = (userCode.match(/for/g) || []).length >= 2;
+        console.log('✅ Exercise 25:', { input: userCode, result });
+        return result;
     }
     
     // Conditions exercises (26-30)
-    if (exerciseId >= 26 && exerciseId <= 30) {
-        const hasIf = userCode.includes('if');
-        if (exerciseId === 26) return hasIf && /\w+\s*>\s*\d+/.test(userCode); // if with > comparison
-        if (exerciseId === 27) return hasIf && userCode.includes('else'); // if...else
-        if (exerciseId === 28) return hasIf && userCode.includes('elif'); // if...elif
-        if (exerciseId === 29) return hasIf && userCode.includes('and'); // if with and
-        if (exerciseId === 30) return hasIf && /\w+\s*>=\s*\d+/.test(userCode); // if with >=
+    if (exerciseId === 26) {
+        const result = userCode.includes('if') && userCode.includes('>');
+        console.log('✅ Exercise 26:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 27) {
+        const result = userCode.includes('if') && userCode.includes('else');
+        console.log('✅ Exercise 27:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 28) {
+        const result = userCode.includes('elif');
+        console.log('✅ Exercise 28:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 29) {
+        const result = userCode.includes('if') && userCode.includes('and');
+        console.log('✅ Exercise 29:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 30) {
+        const result = userCode.includes('if') && userCode.includes('>=');
+        console.log('✅ Exercise 30:', { input: userCode, result });
+        return result;
     }
     
     // Functions exercises (31-35)
-    if (exerciseId >= 31 && exerciseId <= 35) {
-        const hasDef = userCode.includes('def');
-        if (exerciseId === 31) return hasDef && /def\s+\w+\s*\(/.test(userCode); // Any function definition
-        if (exerciseId === 32) return hasDef && /def\s+\w+\s*\([^)]*\)/.test(userCode); // Function with parameter
-        if (exerciseId === 33) return hasDef && userCode.includes('return') && /[\+\-\*\/]/.test(userCode); // Function with return and math
-        if (exerciseId === 34) return hasDef && userCode.includes('return') && /=/.test(userCode); // Function call assignment
-        if (exerciseId === 35) return hasDef && /def\s+\w+\s*\([^)]*=\s*/.test(userCode); // Function with default param
+    if (exerciseId === 31) {
+        const result = userCode.includes('def');
+        console.log('✅ Exercise 31:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 32) {
+        const result = userCode.includes('def') && /\(/.test(userCode);
+        console.log('✅ Exercise 32:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 33) {
+        const result = userCode.includes('def') && userCode.includes('return');
+        console.log('✅ Exercise 33:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 34) {
+        const result = userCode.includes('=') && /def/.test(userCode);
+        console.log('✅ Exercise 34:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 35) {
+        const result = userCode.includes('def') && /=/.test(userCode);
+        console.log('✅ Exercise 35:', { input: userCode, result });
+        return result;
     }
     
     // Turtle exercises (36-40)
-    if (exerciseId >= 36 && exerciseId <= 40) {
-        const hasImport = userCode.includes('import turtle');
-        if (exerciseId === 36) return hasImport && userCode.includes('forward') && userCode.includes('right'); // Square
-        if (exerciseId === 37) return hasImport && userCode.includes('circle'); // Circle
-        if (exerciseId === 38) return hasImport && userCode.includes('color'); // Any color
-        if (exerciseId === 39) return hasImport && userCode.includes('forward') && userCode.includes('left'); // Triangle
-        if (exerciseId === 40) return hasImport && userCode.includes('forward') && /right\(144\)|right\s*\(\s*144\s*\)/.test(userCode); // Star with 144deg
+    if (exerciseId === 36) {
+        const result = userCode.includes('turtle') && userCode.includes('forward') && userCode.includes('right');
+        console.log('✅ Exercise 36:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 37) {
+        const result = userCode.includes('turtle') && userCode.includes('circle');
+        console.log('✅ Exercise 37:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 38) {
+        const result = userCode.includes('turtle') && userCode.includes('color');
+        console.log('✅ Exercise 38:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 39) {
+        const result = userCode.includes('turtle') && userCode.includes('forward') && userCode.includes('left');
+        console.log('✅ Exercise 39:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 40) {
+        const result = userCode.includes('turtle') && userCode.includes('forward');
+        console.log('✅ Exercise 40:', { input: userCode, result });
+        return result;
     }
     
     // Games exercises (41-45)
-    if (exerciseId >= 41 && exerciseId <= 45) {
-        if (exerciseId === 41) return userCode.includes('input') && userCode.includes('if'); // Input and if
-        if (exerciseId === 42) return userCode.includes('import random') && userCode.includes('choice'); // Random choice
-        if (exerciseId === 43) return userCode.includes('import random') && userCode.includes('randint'); // Random int
-        if (exerciseId === 44) return userCode.includes('input') && userCode.includes('in '); // Input with 'in' check
-        if (exerciseId === 45) return userCode.includes('input') && /[\+\-\*\/]/.test(userCode) && userCode.includes('if'); // Math quiz
+    if (exerciseId === 41) {
+        const result = userCode.includes('input') && userCode.includes('if');
+        console.log('✅ Exercise 41:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 42) {
+        const result = userCode.includes('random') && userCode.includes('choice');
+        console.log('✅ Exercise 42:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 43) {
+        const result = userCode.includes('random') && userCode.includes('randint');
+        console.log('✅ Exercise 43:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 44) {
+        const result = userCode.includes('input') && userCode.includes('in ');
+        console.log('✅ Exercise 44:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 45) {
+        const result = userCode.includes('input') && /\d/.test(userCode) && userCode.includes('if');
+        console.log('✅ Exercise 45:', { input: userCode, result });
+        return result;
     }
     
     // Projects exercises (46-50)
-    if (exerciseId >= 46 && exerciseId <= 50) {
-        if (exerciseId === 46) return userCode.includes('import random') && userCode.includes('choice'); // Story gen
-        if (exerciseId === 47) return userCode.includes('print') && /f["']|format\(/.test(userCode); // f-string or format
-        if (exerciseId === 48) return userCode.includes('import random') && userCode.includes('import string'); // Password gen
-        if (exerciseId === 49) return /\[\]/.test(userCode) && userCode.includes('enumerate'); // To-do list
-        if (exerciseId === 50) return userCode.includes('import random') && userCode.includes('randint') && userCode.includes('if'); // Weather app
+    if (exerciseId === 46) {
+        const result = userCode.includes('random') && userCode.includes('choice');
+        console.log('✅ Exercise 46:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 47) {
+        const result = userCode.includes('print') && (userCode.includes('f"') || userCode.includes("f'") || userCode.includes('format'));
+        console.log('✅ Exercise 47:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 48) {
+        const result = userCode.includes('random') && userCode.includes('string');
+        console.log('✅ Exercise 48:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 49) {
+        const result = userCode.includes('enumerate');
+        console.log('✅ Exercise 49:', { input: userCode, result });
+        return result;
+    }
+    if (exerciseId === 50) {
+        const result = userCode.includes('random') && userCode.includes('randint') && userCode.includes('if');
+        console.log('✅ Exercise 50:', { input: userCode, result });
+        return result;
     }
     
     // Default checking for any remaining exercises
