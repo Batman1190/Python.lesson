@@ -598,14 +598,13 @@ function openExerciseModal(exercise) {
     
     modal.style.display = 'block';
 }
-
 function closeExerciseModal() {
     document.getElementById('exercise-modal').style.display = 'none';
 }
 
 function runCode(exerciseId) {
     const codeInput = document.getElementById('exercise-code');
-    
+
     // Mobile-friendly code input handling
     let code = '';
     if (codeInput) {
@@ -617,103 +616,47 @@ function runCode(exerciseId) {
             code = textarea.value;
         }
     }
-    
+
     const outputDiv = document.getElementById(`output-content-${exerciseId}`);
-    
+
     try {
         // Simple Python-like execution simulation
         let output = '';
-        
+
+        // Build a tiny environment of simple string assignments for use by len(variable)
+        // Supports patterns like: name = "Alice" (single-line, string literal only)
+        const env = {};
+        try {
+            const assignRegex = /(\b[A-Za-z_][A-Za-z0-9_]*\b)\s*=\s*("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+            let m;
+            while ((m = assignRegex.exec(code)) !== null) {
+                const varName = m[1];
+                // Strip the surrounding quotes safely
+                const raw = m[2];
+                const strMatch = raw.match(/^"([\s\S]*)"$|^'([\s\S]*)'$/);
+                const value = strMatch ? (strMatch[1] !== undefined ? strMatch[1] : strMatch[2]) : '';
+                env[varName] = value;
+            }
+        } catch (_) { /* ignore env build errors */ }
+
         // Basic code interpretation
         if (code.includes('print(')) {
             const printMatches = code.match(/print\(([^)]+)\)/g);
             if (printMatches) {
                 printMatches.forEach(match => {
                     const content = match.replace('print(', '').replace(')', '');
-                    output += evalPythonExpression(content) + '\n';
+                    output += evalPythonExpression(content, env) + '\n';
                 });
             }
         }
-        
+
         outputDiv.innerHTML = `<pre>${output || 'No output'}</pre>`;
     } catch (error) {
         outputDiv.innerHTML = `<pre style="color: red;">Error: ${error.message}</pre>`;
     }
 }
 
-function checkSolution(exerciseId) {
-    const exercise = exercises.find(ex => ex.id === exerciseId);
-    
-    // Enhanced mobile-friendly code input handling
-    let userCode = '';
-    
-    // Try multiple methods to get code input (for better mobile compatibility)
-    const codeInput = document.getElementById('exercise-code') || 
-                      document.querySelector('textarea#exercise-code') ||
-                      document.querySelector('.code-input');
-    
-    if (codeInput) {
-        userCode = codeInput.value.trim();
-    }
-    
-    // Additional fallback for mobile browsers
-    if (!userCode) {
-        const textarea = document.querySelector('#exercise-code');
-        if (textarea && textarea.value) {
-            userCode = textarea.value.trim();
-        }
-    }
-    
-    const feedbackDiv = document.getElementById(`feedback-${exerciseId}`);
-    
-    // Check if mobile device for enhanced logging
-    const isMobile = isMobileDevice();
-    
-    // Debug logging for mobile troubleshooting
-    console.log('Checking solution for exercise:', exerciseId);
-    console.log('User code:', userCode);
-    console.log('Expected solution:', exercise.solution);
-    console.log('Is mobile:', isMobile);
-    
-    if (!userCode) {
-        feedbackDiv.innerHTML = '<div class="feedback incorrect">⚠️ Please write some code first!</div>';
-        return;
-    }
-    
-    // Flexible solution checking (works for both mobile and desktop)
-    const isCorrect = checkCodeCorrectness(userCode, exercise.solution);
-    
-    console.log('Is correct:', isCorrect);
-    
-    if (isCorrect) {
-        feedbackDiv.innerHTML = '<div class="feedback correct">🎉 Great job! Your code is correct!</div>';
-        
-        if (!completedExercises.includes(exerciseId)) {
-            completedExercises.push(exerciseId);
-            earnedStars += 3;
-            localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
-            localStorage.setItem('earnedStars', earnedStars.toString());
-            updateProgress();
-            loadExercises();
-            
-            // Scroll feedback into view on mobile
-            if (isMobile) {
-                setTimeout(() => {
-                    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            }
-        }
-    } else {
-        feedbackDiv.innerHTML = '<div class="feedback incorrect">❌ Not quite right. Try again! 💡 Click "Get Hint" for help!</div>';
-        
-        // Scroll feedback into view on mobile
-        if (isMobile) {
-            setTimeout(() => {
-                feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-    }
-}
+ 
 
 function showHint(exerciseId) {
     const exercise = exercises.find(ex => ex.id === exerciseId);
@@ -1226,17 +1169,42 @@ function getCurrentExerciseId() {
     return null;
 }
 
-function evalPythonExpression(expr) {
+function evalPythonExpression(expr, env = {}) {
     // Very basic Python expression evaluation
-    expr = expr.replace(/"/g, '').replace(/'/g, '');
-    
-    if (expr.includes('+')) {
-        const parts = expr.split('+');
-        return parts.map(p => p.trim()).join('');
+    const original = expr;
+    const trimmed = (expr || '').trim();
+
+    // Handle len(...) for string literals and simple variables
+    const lenMatch = trimmed.match(/^len\s*\(\s*([^)]+)\s*\)\s*$/i);
+    if (lenMatch) {
+        const inner = lenMatch[1].trim();
+        // If it's a quoted string literal
+        const literal = inner.match(/^"([\s\S]*)"$|^'([\s\S]*)'$/);
+        if (literal) {
+            const content = literal[1] !== undefined ? literal[1] : literal[2];
+            return String(content.length);
+        }
+        // If it's a simple variable name referencing a string in env
+        const varNameMatch = inner.match(/^[A-Za-z_][A-Za-z0-9_]*$/);
+        if (varNameMatch) {
+            const name = varNameMatch[0];
+            if (typeof env[name] === 'string') {
+                return String(env[name].length);
+            }
+        }
+        // Fallback: unknown, just return as-is
+        return original;
     }
-    
-    if (expr.includes('*')) {
-        const parts = expr.split('*');
+
+    // String concatenation like "Hello" + "World" (remove quotes and join)
+    if (trimmed.includes('+')) {
+        const parts = trimmed.split('+');
+        return parts.map(p => p.replace(/^[\s]*["']|["'][\s]*$/g, '').trim()).join('');
+    }
+
+    // Simple integer multiplication like 2 * 3
+    if (trimmed.includes('*')) {
+        const parts = trimmed.split('*');
         if (parts.length === 2) {
             const a = parseInt(parts[0].trim());
             const b = parseInt(parts[1].trim());
@@ -1245,8 +1213,9 @@ function evalPythonExpression(expr) {
             }
         }
     }
-    
-    return expr;
+
+    // Default: return the original expression
+    return original;
 }
 
 function updateProgress() {
