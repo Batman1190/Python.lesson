@@ -1129,7 +1129,8 @@ function checkCodeCorrectness(userCode, solution) {
         return result;
     }
     if (exerciseId === 44) {
-        const result = userCode.includes('input') && userCode.includes('in ');
+        // Use word-boundary regex for 'in' to better handle mobile spacing/normalization
+        const result = userCode.includes('input') && /\bin\b/.test(userCode);
         console.log('✅ Exercise 44:', { input: userCode, result });
         return result;
     }
