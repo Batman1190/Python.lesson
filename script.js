@@ -656,7 +656,58 @@ function runCode(exerciseId) {
     }
 }
 
- 
+// Check the user's answer for a given exercise
+function checkSolution(exerciseId) {
+    const exercise = exercises.find(ex => ex.id === exerciseId);
+    // Mobile-friendly code input handling
+    let userCode = '';
+    const codeInput = document.getElementById('exercise-code') ||
+                      document.querySelector('textarea#exercise-code') ||
+                      document.querySelector('.code-input');
+    if (codeInput) {
+        userCode = (codeInput.value || '').trim();
+    }
+    if (!userCode) {
+        const textarea = document.querySelector('#exercise-code');
+        if (textarea && textarea.value) {
+            userCode = textarea.value.trim();
+        }
+    }
+
+    const feedbackDiv = document.getElementById(`feedback-${exerciseId}`);
+    const isMobile = isMobileDevice();
+
+    if (!userCode) {
+        feedbackDiv.innerHTML = '<div class="feedback incorrect">⚠️ Please write some code first!</div>';
+        return;
+    }
+
+    const isCorrect = checkCodeCorrectness(userCode, exercise.solution);
+
+    if (isCorrect) {
+        feedbackDiv.innerHTML = '<div class="feedback correct">🎉 Great job! Your code is correct!</div>';
+        if (!completedExercises.includes(exerciseId)) {
+            completedExercises.push(exerciseId);
+            earnedStars += 3;
+            localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+            localStorage.setItem('earnedStars', earnedStars.toString());
+            updateProgress();
+            loadExercises();
+            if (isMobile) {
+                setTimeout(() => {
+                    feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        }
+    } else {
+        feedbackDiv.innerHTML = '<div class="feedback incorrect">❌ Not quite right. Try again! 💡 Click "Get Hint" for help!</div>';
+        if (isMobile) {
+            setTimeout(() => {
+                feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }
+}
 
 function showHint(exerciseId) {
     const exercise = exercises.find(ex => ex.id === exerciseId);
