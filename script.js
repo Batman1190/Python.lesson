@@ -873,43 +873,53 @@ function checkCodeCorrectness(userCode, solution) {
     // Variables exercises (1-5) - Flexible pattern matching
     if (exerciseId === 1) {
         // My First Variable - accept any variable assignment with a string value
-        const hasAssignment = /\w+\s*=\s*"[^"]*"/.test(userCode) || /\w+\s*=\s*'[^']*'/.test(userCode);
+        // Very flexible: just check for variable assignment with any quote
+        const hasEquals = userCode.includes('=');
+        const hasQuote = userCode.includes('"') || userCode.includes("'");
+        const hasAssignment = hasEquals && hasQuote;
+        console.log('Exercise 1 Test:', { userCode, hasEquals, hasQuote, hasAssignment });
         return hasAssignment;
     }
     
     if (exerciseId === 2) {
         // Age Variable - accept any variable assignment with a number
-        const hasAssignment = /\w+\s*=\s*\d+/.test(userCode);
+        // Very flexible: check for = followed by digits
+        const hasEquals = userCode.includes('=');
+        const hasNumber = /\d/.test(userCode);
+        const hasAssignment = hasEquals && hasNumber;
+        console.log('Exercise 2 Test:', { userCode, hasEquals, hasNumber, hasAssignment });
         return hasAssignment;
     }
     
     if (exerciseId === 3) {
         // Favorite Color - accept any variable assignment with a string
-        const hasAssignment = /\w+\s*=\s*"[^"]*"/.test(userCode) || /\w+\s*=\s*'[^']*'/.test(userCode);
+        // Same as exercise 1
+        const hasEquals = userCode.includes('=');
+        const hasQuote = userCode.includes('"') || userCode.includes("'");
+        const hasAssignment = hasEquals && hasQuote;
+        console.log('Exercise 3 Test:', { userCode, hasEquals, hasQuote, hasAssignment });
         return hasAssignment;
     }
     
     if (exerciseId === 4) {
         // Change Variables - accept any variable reassignment
-        const lines = userCode.split('\n').map(line => line.trim()).filter(line => line);
-        if (lines.length >= 2) {
-            const firstMatch = lines[0].match(/(\w+)\s*=\s*(.+)/);
-            const secondMatch = lines[1].match(/(\w+)\s*=\s*(.+)/);
-            const isReassignment = firstMatch && secondMatch && firstMatch[1] === secondMatch[1];
-            console.log('Mobile Debug - Exercise 4:', { lines: lines.length, isReassignment });
-            return isReassignment;
+        // Find all variable assignments: varName = ...
+        const matches = [...userCode.matchAll(/(\w+)\s*=\s*/g)];
+        console.log('Exercise 4 Debug:', { matches: matches.length, vars: matches.map(m => m[1]) });
+        // Check if at least one variable appears twice (reassignment)
+        if (matches.length >= 2) {
+            const vars = matches.map(m => m[1]);
+            // Check for duplicate variable names (same variable assigned twice)
+            return new Set(vars).size < vars.length;
         }
         return false;
     }
     
     if (exerciseId === 5) {
         // Multiple Variables - accept any three variables
-        const lines = userCode.split('\n').map(line => line.trim()).filter(line => line);
-        let validVariables = 0;
-        lines.forEach(line => {
-            if (/\w+\s*=\s*.+/.test(line)) validVariables++;
-        });
-        return validVariables >= 3;
+        const matches = userCode.match(/\w+\s*=/g);
+        console.log('Exercise 5 Debug:', { varCount: matches ? matches.length : 0 });
+        return matches && matches.length >= 3;
     }
     
     // Numbers exercises (6-10) - Flexible checking

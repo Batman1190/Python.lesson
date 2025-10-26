@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mobile Exercise Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .pass { background: #d4edda; }
+        .fail { background: #f8d7da; }
+        textarea { width: 100%; min-height: 100px; padding: 10px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Mobile Exercise Validation Test</h1>
+    <p>This page tests if exercise checking works correctly on mobile browsers.</p>
+    
+    <div class="test">
+        <h3>Exercise 1: My First Variable</h3>
+        <textarea id="test1">name = "Alice"</textarea>
+        <button onclick="testExercise(1)">Test Exercise 1</button>
+        <div id="result1"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Exercise 2: Age Variable</h3>
+        <textarea id="test2">age = 7</textarea>
+        <button onclick="testExercise(2)">Test Exercise 2</button>
+        <div id="result2"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Exercise 3: Favorite Color</h3>
+        <textarea id="test3">color = "blue"</textarea>
+        <button onclick="testExercise(3)">Test Exercise 3</button>
+        <div id="result3"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Exercise 11: My First String</h3>
+        <textarea id="test11">"Hello"</textarea>
+        <button onclick="testExercise(11)">Test Exercise 11</button>
+        <div id="result11"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Exercise 16: My First List</h3>
+        <textarea id="test16">colors = ["red", "blue", "green"]</textarea>
+        <button onclick="testExercise(16)">Test Exercise 16</button>
+        <div id="result16"></div>
+    </div>
+    
+    <script>
+        // Simulate the normalization function
+        function normalizeCode(userCode) {
+            if (!userCode || typeof userCode !== 'string') {
+                return '';
+            }
+            
+            // STEP 1: Clean up mobile keyboard quirks
+            let cleanedCode = userCode
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n')
+                .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '')
+                .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ');
+            
+            // STEP 2: Normalize whitespace
+            cleanedCode = cleanedCode.replace(/[ \t]+/g, ' ');
+            cleanedCode = cleanedCode.replace(/\n+/g, ' ');
+            cleanedCode = cleanedCode.replace(/\s+/g, ' ').trim();
+            
+            // STEP 3: Make case-insensitive
+            return cleanedCode.toLowerCase();
+        }
+        
+        // Exercise checking patterns
+        function checkExercise(exerciseId, normalizedCode) {
+            console.log('Checking exercise', exerciseId, 'with code:', normalizedCode);
+            
+            switch(exerciseId) {
+                case 1:
+                    return /\w+\s*=\s*"[^"]*"/.test(normalizedCode) || /\w+\s*=\s*'[^']*'/.test(normalizedCode);
+                case 2:
+                    return /\w+\s*=\s*\d+/.test(normalizedCode);
+                case 3:
+                    return /\w+\s*=\s*"[^"]*"/.test(normalizedCode) || /\w+\s*=\s*'[^']*'/.test(normalizedCode);
+                case 11:
+                    return /"[^"]*"/.test(normalizedCode) || /'[^']*'/.test(normalizedCode);
+                case 16:
+                    return /\[.*\]/.test(normalizedCode);
+                default:
+                    return false;
+            }
+        }
+        
+        function testExercise(exerciseId) {
+            const inputId = 'test' + exerciseId;
+            const resultId = 'result' + exerciseId;
+            const textarea = document.getElementById(inputId);
+            const resultDiv = document.getElementById(resultId);
+            
+            const originalCode = textarea.value;
+            const normalizedCode = normalizeCode(originalCode);
+            const isCorrect = checkExercise(exerciseId, normalizedCode);
+            
+            console.log('Test Results:', {
+                exerciseId,
+                original: originalCode,
+                normalized: normalizedCode,
+                isCorrect
+            });
+            
+            resultDiv.innerHTML = `
+                <p><strong>Original:</strong> "${originalCode}"</p>
+                <p><strong>Normalized:</strong> "${normalizedCode}"</p>
+                <p><strong>Result:</strong> <span style="color:${isCorrect?'green':'red'};font-weight:bold;">${isCorrect ? '✅ PASS' : '❌ FAIL'}</span></p>
+            `;
+            resultDiv.className = isCorrect ? 'pass' : 'fail';
+        }
+        
+        // Auto-run all tests on load
+        window.addEventListener('load', function() {
+            console.log('Running auto-tests...');
+            for (let i = 1; i <= 3; i++) {
+                testExercise(i);
+            }
+            testExercise(11);
+            testExercise(16);
+        });
+    </script>
+</body>
+</html>
+
