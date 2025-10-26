@@ -694,7 +694,7 @@ body {
     font-weight: 700;
 }
 
-/* Responsive Design */
+/* Mobile-specific improvements */
 @media (max-width: 768px) {
     .header .container {
         flex-direction: column;
@@ -731,12 +731,48 @@ body {
         justify-content: flex-start;
         overflow-x: auto;
         padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
     }
     
     .modal-content {
-        margin: 10% auto;
+        margin: 5% auto;
         width: 95%;
         padding: 20px;
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Mobile-friendly buttons */
+    .nav-btn, .cta-button, .run-button, .check-button, .hint-button {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
+    }
+    
+    /* Mobile-friendly code input */
+    .code-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+        min-height: 120px;
+        touch-action: manipulation;
+    }
+    
+    /* Mobile-friendly cards */
+    .topic-card, .exercise-card, .feature-card {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+    
+    /* Mobile-friendly modal */
+    .modal {
+        padding: 10px;
+    }
+    
+    .close {
+        font-size: 2.5rem;
+        padding: 10px;
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 
